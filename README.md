@@ -1,1 +1,1 @@
-login sensillo con firebase
+login sencillo con firebase
