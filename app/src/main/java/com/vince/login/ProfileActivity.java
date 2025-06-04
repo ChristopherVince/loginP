@@ -1,8 +1,8 @@
 package com.vince.login;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,39 +13,41 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+public class ProfileActivity extends AppCompatActivity {
 
-public class MainActivity extends AppCompatActivity {
+    private TextView emailTextView, uidTextView, nameText;
 
-    private TextView userTextView;
-    private Button logoutButton, profileButton, dashboardButton;
+
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
+    private FirebaseUser currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_profile);
 
-        userTextView = findViewById(R.id.userTextView);
-        logoutButton = findViewById(R.id.logoutButton);
-        profileButton = findViewById(R.id.profileButton);
+        emailTextView = findViewById(R.id.emailTextView);
+        uidTextView = findViewById(R.id.uidTextView);
+        nameText = findViewById(R.id.nameText);
 
-        db = FirebaseFirestore.getInstance();
+
         mAuth = FirebaseAuth.getInstance();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+        db = FirebaseFirestore.getInstance();
+        currentUser = mAuth.getCurrentUser();
 
         if (currentUser != null) {
-
             String uid = currentUser.getUid();
+            emailTextView.setText("Email: " + currentUser.getEmail());
+            uidTextView.setText("UID: " + uid);
 
             //  Obtener nombre desde Firestore
             db.collection("users").document(uid).get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
                             String name = documentSnapshot.getString("name");
-                            userTextView.setText("Bienvenido: "+name);
+                            nameText.setText("Nombre: "+name);
                         } else {
-
                             Toast.makeText(this, "Datos no encontrados en Firestore", Toast.LENGTH_SHORT).show();
                         }
                     })
@@ -53,16 +55,5 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(this, "Error al obtener datos: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     });
         }
-
-        logoutButton.setOnClickListener(v -> {
-            mAuth.signOut();
-            startActivity(new Intent(MainActivity.this, LoginActivity.class));
-            finish();
-        });
-
-        profileButton.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, ProfileActivity.class));
-        });
-
     }
 }
